@@ -16,6 +16,7 @@ const LEADER_SPRITE_WIDTH = 12*16;
 const LANCER_SPRITE_WIDTH = 320;
 
 const UNIT_SPEED = 100;
+const LEADER_SPEED = UNIT_SPEED + 20;
 
 const PLAYABLE_WIDTH = 640;
 const SIDE_PANEL_WIDTH = 200;
@@ -53,12 +54,12 @@ const CIRCLE_FORMATION = {
     }
 };
 
-function moveUnitTo(unit, position) {
+function moveUnitTo(unit, position, moveSpeed = UNIT_SPEED) {
     if (unit.state == "idle") {
         unit.enterState("move");
     }
 
-    unit.moveTo(position, UNIT_SPEED);
+    unit.moveTo(position, moveSpeed);
 
     const currentPos = unit.c("pos").pos;
 
@@ -122,7 +123,7 @@ k.scene("main", () => {
     add([k.pos(0,0), k.sprite("grass", {width: PLAYABLE_WIDTH, height: PLAYABLE_HEIGHT, tiled: true})]);
 
     // unit spawning functions
-    const spawnUnit = (pos, spriteName, flipX = false, unitScale = SPRITE_SCALE, states = ["idle", "move"], spriteWidth = LEADER_SPRITE_WIDTH, spriteHeight = LEADER_SPRITE_WIDTH) => {
+    const spawnUnit = (pos, spriteName, flipX = false, unitScale = SPRITE_SCALE, spriteWidth = LEADER_SPRITE_WIDTH, spriteHeight = LEADER_SPRITE_WIDTH, unitSpeed = UNIT_SPEED, states = ["idle", "move"]) => {
 
         // we expect the pos to be the center point 
         // but we need to adjust it to the top left corner
@@ -133,7 +134,7 @@ k.scene("main", () => {
 
         const unit = add([k.pos(adjustedPos), 
             k.sprite(spriteName, 
-                {anim: "idle", speed: UNIT_SPEED, flipX: flipX},
+                {anim: "idle", speed: unitSpeed, flipX: flipX},
             ),
             scale(unitScale), 
             k.area(),
@@ -163,12 +164,12 @@ k.scene("main", () => {
     }
 
     const spawnLeader = (pos, spriteName, flipX = false) => {
-        const l = spawnUnit(pos, spriteName, flipX, SPRITE_SCALE);
+        const l = spawnUnit(pos, spriteName, flipX, SPRITE_SCALE, LEADER_SPRITE_WIDTH, LEADER_SPRITE_WIDTH, LEADER_SPEED);
 
         l.onUpdate(() => {
             if (l.targetPos) {
                 const targetPos = l.targetPos;
-                const targetReached = moveUnitTo(l, targetPos);
+                const targetReached = moveUnitTo(l, targetPos, LEADER_SPEED);
                 if (targetReached) {
                     l.targetPos = null;
                     l.enterState("idle");
@@ -181,19 +182,32 @@ k.scene("main", () => {
     }
 
     const spawnLancer = (pos, unitId, leader) => {
-        const lancer = spawnUnit(pos, "blue_lancer", false, SPRITE_SCALE, ["idle", "move", "randomMove"], LANCER_SPRITE_WIDTH, LANCER_SPRITE_WIDTH);
+        const lancer = spawnUnit(pos, "blue_lancer", false, SPRITE_SCALE, LANCER_SPRITE_WIDTH, LANCER_SPRITE_WIDTH);
         lancer.unitId = unitId;
         lancer.leader = leader;
         
         lancer.onUpdate(() => {
-            if (lancer.formation) {
-                const targetPos = lancer.formation.calculatePosition(leader.getCenter(), unitId).sub(lancer.scaledAdjustVector);
+            // keep track of your leader
+            lancer.leaderPosition = leader.getCenter();
 
-                const targetReached = moveUnitTo(lancer, targetPos);
-                if (targetReached) {
+            if (lancer.oldLeaderPosition == null || lancer.oldLeaderPosition.dist(lancer.leaderPosition) > 30) {
+                lancer.oldLeaderPosition = lancer.leaderPosition;
+            }
+
+            // handle formation
+            if (lancer.formation) {
+                const targetPos = lancer.formation.calculatePosition(lancer.oldLeaderPosition, unitId).sub(lancer.scaledAdjustVector);
+                
+                if (targetPos.dist(lancer.pos.pos) > 1)  {
+                    const targetReached = moveUnitTo(lancer, targetPos);
+                    if (targetReached) {
+                        lancer.enterState("idle");
+                        // lancer.formation = null;
+                    }
+                } else {
                     lancer.enterState("idle");
-                    lancer.formation = null;
                 }
+                
             }
         });
 
