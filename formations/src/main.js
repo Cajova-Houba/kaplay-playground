@@ -2,6 +2,8 @@ import kaplay from "kaplay";
 import { selectable } from "./selectable.ts"
 // import "kaplay/global"; // uncomment if you want to use without the k. prefix
 
+const UNIT_DEBUG_POINT = false;
+
 const UNIT_TAG = "unit";
 const LEADER_TAG = "leader";
 const ENEMY_TAG = "enemy";
@@ -146,8 +148,10 @@ k.scene("main", () => {
 
         // add center point to each unit
         // for debug purposes
-        unit.center = k.pos(0,0).pos.add(adjustVector);
-        unit.add([k.pos(unit.center), circle(10), color(Color.RED)]);
+        if (UNIT_DEBUG_POINT) {
+            unit.center = k.pos(0,0).pos.add(adjustVector);
+            unit.add([k.pos(unit.center), circle(10), color(Color.RED)]);
+        }
 
         unit.onStateEnter("idle", () => {
             unit.play("idle")
