@@ -144,13 +144,13 @@ k.scene("main", () => {
         unit.adjustVector = adjustVector;
         unit.scaledAdjustVector = adjustVector.scale(unitScale);
         unit.getCenter = () => {
-            return unit.pos.add(unit.adjustVector.scale(unitScale));
+            return unit.pos.add(unit.scaledAdjustVector);
         }
 
         // add center point to each unit
         // for debug purposes
         if (UNIT_DEBUG_POINT) {
-            unit.center = k.pos(0,0).pos.add(adjustVector);
+            unit.center = k.pos(0,0).pos.add(unit.scaledAdjustVector);
             unit.add([k.pos(unit.center), circle(10), color(Color.RED)]);
         }
 
@@ -233,7 +233,14 @@ k.scene("main", () => {
     
     
     // controls
-    const circleFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 50), area(), text("Circle formation", {size: 16}), "circleFormationButton"]);
+    const cacncelFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 50), area(), text("Cancel formation", {size: 16}), "cancelFormationButton"]); 
+    cacncelFormationBtn.onClick(() => {
+        group.forEach(unit => {
+            unit.formation = null;
+            unit.enterState("idle");
+        });
+    })
+    const circleFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 100), area(), text("Circle formation", {size: 16}), "circleFormationButton"]);
     circleFormationBtn.onClick(() => {
         group.forEach(unit => {
             unit.formation = CIRCLE_FORMATION;
@@ -255,7 +262,7 @@ k.scene("main", () => {
         // }
     });
 
-    const lineFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 100), area(), text("Line formation", {size: 16}), "speedUpgradeButton"]);
+    const lineFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 150), area(), text("Line formation", {size: 16}), "speedUpgradeButton"]);
     lineFormationBtn.onClick(() => {
 
     });
