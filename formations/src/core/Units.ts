@@ -1,44 +1,41 @@
+import { UNIT_DEBUG_POINT } from "../App";
 import type { Comp, GameObj, PosComp, SpriteComp, StateComp, Vec2 } from "kaplay";
 import { Formation } from "./Formations";
+import "kaplay/global";
+
+export const DEFAULT_SPRITE_SCALE = 0.75;
 
 export const UNIT_SPEED = 100;
+export const LEADER_SPEED = UNIT_SPEED + 20;
 
 export const UNIT_TAG = "unit";
 export const LEADER_TAG = "leader";
 export const ENEMY_TAG = "enemy";
 
+const LEADER_SPRITE_WIDTH = 12*16;
+const LANCER_SPRITE_WIDTH = 320;
+const LEADER_SCALE = 0.8;
 
-/**
- * Unit component. Requires the following comps: pos, sprite, state.
- */
-export interface UnitComp extends Comp {
-
-    /**
-     * Unscaled vector from the object's position (=its top left corner) to its center. 
-     */
-    adjustVector: Vec2;
-
-    /**
-     * Scaled adjuctVector.
-     */
-    scaledAdjustVector: Vec2;
-
-    /**
-     * Returns the center of this unit (using its position and scaledAdjustVector).
-     */
-    getCenter(): Vec2;
-
+export interface MovementComp extends Comp {
+    speed: number;
+    targetPos?: Vec2 | null;
     moveUnitTo(position: Vec2, speed?: number): boolean;
 }
 
-export function unit(adjustVector: Vec2, scaledAdjustVector: Vec2): UnitComp {
-    const newUnit = {
-        id: "unit",
-        require: ["state", "sprite", "area", "pos"],
-        adjustVector: adjustVector,
-        scaledAdjustVector: scaledAdjustVector,
-        getCenter(this: GameObj<PosComp | UnitComp>) {
-            return this.pos.add(this.scaledAdjustVector);
+export function movement(speed: number): MovementComp {
+    return {
+        id: "movement",
+        require: ["pos", "unit"],
+        speed: speed,
+        update(this: GameObj<MovementComp | StateComp | UnitComp>) {
+            if (this.targetPos) {
+                const targetPos = this.targetPos;
+                const targetReached = this.moveUnitTo(targetPos, this.speed);
+                if (targetReached) {
+                    this.targetPos = null;
+                    this.enterState("idle");
+                }
+            }
         },
         moveUnitTo(this: GameObj<PosComp | StateComp | SpriteComp | UnitComp>, position: Vec2, speed?: number) {
             if (this.state == "idle") {
@@ -61,6 +58,39 @@ export function unit(adjustVector: Vec2, scaledAdjustVector: Vec2): UnitComp {
             return position.dist(currentPos) < 10;
         }
 
+    }
+}
+
+/**
+ * Unit component. Requires the following comps: pos, sprite, state.
+ */
+export interface UnitComp extends Comp {
+
+    /**
+     * Unscaled vector from the object's position (=its top left corner) to its center. 
+     */
+    adjustVector: Vec2;
+
+    /**
+     * Scaled adjuctVector.
+     */
+    scaledAdjustVector: Vec2;
+
+    /**
+     * Returns the center of this unit (using its position and scaledAdjustVector).
+     */
+    getCenter(): Vec2;    
+}
+
+export function unit(adjustVector: Vec2, scaledAdjustVector: Vec2): UnitComp {
+    const newUnit = {
+        id: "unit",
+        require: ["state", "sprite", "area", "pos"],
+        adjustVector: adjustVector,
+        scaledAdjustVector: scaledAdjustVector,
+        getCenter(this: GameObj<PosComp | UnitComp>) {
+            return this.pos.add(this.scaledAdjustVector);
+        },
     };
 
     return newUnit;
@@ -95,7 +125,7 @@ export function lancer(unitId: number, leader: GameObj<PosComp | UnitComp>): Lan
         require: ["unit"],
         unitId: unitId, 
         leader: leader,
-        update(this: GameObj<PosComp | StateComp | UnitComp | LancerComp>) {
+        update(this: GameObj<PosComp | MovementComp | StateComp | UnitComp | LancerComp>) {
             // keep track of your leader
             const leaderPosition = this.leader.getCenter();
 
@@ -123,4 +153,62 @@ export function lancer(unitId: number, leader: GameObj<PosComp | UnitComp>): Lan
     };
 
     return newLancer;
+}
+
+export function spawnUnit(position: PosComp, spriteName: string, flipX: boolean = false, unitScale: number = DEFAULT_SPRITE_SCALE, spriteWidth: number = LEADER_SPRITE_WIDTH, 
+    spriteHeight: number = LEADER_SPRITE_WIDTH, unitSpeed: number = UNIT_SPEED, states = ["idle", "move"])
+    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp>
+    {
+    // we expect the pos to be the center point 
+    // but we need to adjust it to the top left corner
+    // in order for it to be compatible with the 
+    // Kaplay API
+    const adjustVector = vec2(spriteWidth/2.0, spriteHeight/2.0);
+    const adjustedPos = position.pos.sub(adjustVector);
+
+    const newUnit = add([pos(adjustedPos), 
+        sprite(spriteName, 
+            {anim: "idle", speed: unitSpeed, flipX: flipX},
+        ),
+        scale(unitScale), 
+        area(),
+        unit(adjustVector, adjustVector.scale(unitScale)),
+        state("idle", states),
+        movement(unitSpeed),
+        UNIT_TAG
+    ]);
+
+    // add center point to each unit
+    // for debug purposes
+    if (UNIT_DEBUG_POINT) {
+        const center = pos(0,0).pos.add(newUnit.adjustVector);
+        newUnit.add([pos(center), circle(10), color(Color.RED)]);
+    }
+
+    newUnit.onStateEnter("idle", () => {
+        newUnit.play("idle")
+    })
+    newUnit.onStateEnter("move", () => {
+        newUnit.play("move");
+    });
+    return newUnit;
+}
+
+export function spawnLeader(position: PosComp,  spriteName: string, flipX: boolean = false)
+            : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp>
+    {
+    const l = spawnUnit(position, spriteName, flipX, LEADER_SCALE, LEADER_SPRITE_WIDTH, LEADER_SPRITE_WIDTH, LEADER_SPEED);
+
+    return l;
+}
+
+export function spawnLancer(position: PosComp, unitId: number, leader: GameObj<PosComp | UnitComp>) {
+        const newLancer = spawnUnit(position, "blue_lancer", false, DEFAULT_SPRITE_SCALE, LANCER_SPRITE_WIDTH, LANCER_SPRITE_WIDTH);
+        newLancer.use(lancer(unitId, leader))
+        
+        if (UNIT_DEBUG_POINT) {
+            newLancer.add([pos(newLancer.adjustVector), text(unitId), color(Color.GREEN)]);
+        }
+
+        return newLancer;
 }

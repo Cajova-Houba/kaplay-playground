@@ -1,7 +1,7 @@
-import {k, PLAYABLE_WIDTH, PLAYABLE_HEIGHT, UNIT_DEBUG_POINT, SIDE_PANEL_WIDTH} from "../App.ts";
-
+import {k, PLAYABLE_WIDTH, PLAYABLE_HEIGHT, SIDE_PANEL_WIDTH} from "../App.ts";
 import { CircleFormation, DirectedLineFormation, SquareFormation } from "../core/Formations.ts";
-import { lancer, unit, UNIT_TAG, LEADER_TAG, ENEMY_TAG } from "../core/Units.ts";
+import { spawnLeader, spawnLancer, LEADER_TAG, ENEMY_TAG, LancerComp, UnitComp } from "../core/Units.ts";
+import type { GameObj } from "kaplay";
 
 const UNIT_SPEED = 100;
 const LEADER_SPEED = UNIT_SPEED + 20;
@@ -9,12 +9,23 @@ const LEADER_SPEED = UNIT_SPEED + 20;
 // units in the group, not counting the leader
 const GROUP_SIZE = 9;
 
-const LEADER_SCALE = 0.8;
 const SPRITE_SCALE = 0.75;
 const LEADER_SPRITE_WIDTH = 12*16;
 const LANCER_SPRITE_WIDTH = 320;
 
-let selectedUnit = null;
+class SelectedUnit {
+    unit: GameObj;
+    outline: GameObj;
+    selectedAt: number;
+
+    constructor(unit: GameObj, outline: GameObj) {
+        this.unit = unit;
+        this.outline = outline;
+        this.selectedAt = time();
+    }
+}
+
+let selectedUnit: SelectedUnit | null = null;
 
 export function createMainScene() {
     k.scene("main", () => {
@@ -22,78 +33,13 @@ export function createMainScene() {
     // yard = that's where the formations happen
     add([k.pos(0,0), k.sprite("grass", {width: PLAYABLE_WIDTH, height: PLAYABLE_HEIGHT, tiled: true})]);
 
-    // unit spawning functions
-    const spawnUnit = (pos, spriteName, flipX = false, unitScale = SPRITE_SCALE, spriteWidth = LEADER_SPRITE_WIDTH, spriteHeight = LEADER_SPRITE_WIDTH, unitSpeed = UNIT_SPEED, states = ["idle", "move"]) => {
-
-        // we expect the pos to be the center point 
-        // but we need to adjust it to the top left corner
-        // in order for it to be compatible with the 
-        // Kaplay API
-        const adjustVector = new Vec2(spriteWidth/2.0, spriteHeight/2.0);
-        const adjustedPos = pos.pos.sub(adjustVector);
-
-        const newUnit = add([k.pos(adjustedPos), 
-            k.sprite(spriteName, 
-                {anim: "idle", speed: unitSpeed, flipX: flipX},
-            ),
-            scale(unitScale), 
-            k.area(),
-            unit(adjustVector, adjustVector.scale(unitScale)),
-            state("idle", states),
-            UNIT_TAG
-        ]);
-
-        // add center point to each unit
-        // for debug purposes
-        if (UNIT_DEBUG_POINT) {
-            const center = k.pos(0,0).pos.add(newUnit.adjustVector);
-            newUnit.add([k.pos(center), circle(10), color(Color.RED)]);
-        }
-
-        newUnit.onStateEnter("idle", () => {
-            newUnit.play("idle")
-        })
-        newUnit.onStateEnter("move", () => {
-            newUnit.play("move");
-        });
-        return newUnit;
-    }
-
-    const spawnLeader = (pos, spriteName, flipX = false) => {
-        const l = spawnUnit(pos, spriteName, flipX, LEADER_SCALE, LEADER_SPRITE_WIDTH, LEADER_SPRITE_WIDTH, LEADER_SPEED);
-
-        l.onUpdate(() => {
-            if (l.targetPos) {
-                const targetPos = l.targetPos;
-                const targetReached = l.moveUnitTo(targetPos, LEADER_SPEED);
-                if (targetReached) {
-                    l.targetPos = null;
-                    l.enterState("idle");
-                }
-            }
-        });
-        l.targetPos = null;
-
-        return l;
-    }
-
-    const spawnLancer = (pos, unitId, leader) => {
-        const newLancer = spawnUnit(pos, "blue_lancer", false, SPRITE_SCALE, LANCER_SPRITE_WIDTH, LANCER_SPRITE_WIDTH);
-        newLancer.use(lancer(unitId, leader))
-        
-        if (UNIT_DEBUG_POINT) {
-            newLancer.add([k.pos(newLancer.adjustVector), text(unitId), color(Color.GREEN)]);
-        }
-
-        return newLancer;
-    }
-
     // spawn enemy
     const enemy = spawnLeader(k.pos(PLAYABLE_WIDTH - 10, PLAYABLE_HEIGHT/2.0), "red_warrior", true);
     enemy.tag([LEADER_TAG, ENEMY_TAG]);
 
     // group
-    const group = [];
+    const group: GameObj<LancerComp>[] = [];
+
     // group leader
     const leader = spawnLeader(k.pos(300,300), "blue_warrior");
     leader.tag(LEADER_TAG);
@@ -155,7 +101,7 @@ export function createMainScene() {
 
 
     // handle events
-    onClick(LEADER_TAG, (unit) => {
+    onClick(LEADER_TAG, (unit: GameObj) => {
         if (selectedUnit != null) {
             k.destroy(selectedUnit.outline);
         } else {
@@ -169,6 +115,7 @@ export function createMainScene() {
                 outline(3, Color.YELLOW)
             ]);
             const currTime = time();
+            selectedUnit = new SelectedUnit(unit, outlineObj);
             selectedUnit = {
                 unit: unit,
                 outline: outlineObj,
