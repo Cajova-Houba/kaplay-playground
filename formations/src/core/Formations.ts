@@ -1,7 +1,6 @@
 import type { GameObj, PosComp, Vec2 } from "kaplay";
-import kaplay from "kaplay";
-import { UnitComp } from "./units";
-const k = kaplay({ global: false });
+import "kaplay/global";
+import { UnitComp } from "./Units";
 
 export interface Formation {
     /**
@@ -28,7 +27,7 @@ export class CircleFormation implements Formation {
 
     calculatePosition(leaderPosition: Vec2, unitId: number): Vec2 {
         const angleRad = (unitId * 360 / this.groupSize) * Math.PI / 180;
-        const deltaFromLeader = k.vec2(this.radius * Math.cos(angleRad), this.radius * Math.sin(angleRad));
+        const deltaFromLeader = vec2(this.radius * Math.cos(angleRad), this.radius * Math.sin(angleRad));
         return leaderPosition.add(deltaFromLeader);
     }
 }
@@ -60,39 +59,39 @@ export class SquareFormation implements Formation {
 
         // right side
         if (angle < 45 || angle > 315) {
-            deltaFromLeader = k.vec2(halfSize, halfSize*(- Math.tan(angleRad)));
+            deltaFromLeader = vec2(halfSize, halfSize*(- Math.tan(angleRad)));
 
         // top right corner
         } else if (angle == 45) {
-            deltaFromLeader = k.vec2(halfSize, -halfSize);
+            deltaFromLeader = vec2(halfSize, -halfSize);
 
         // top side
         } else if (angle > 45 && angle <= 90) {
-            deltaFromLeader = k.vec2(halfSize*(Math.tan((90-angle) * Math.PI / 180)), -halfSize);
+            deltaFromLeader = vec2(halfSize*(Math.tan((90-angle) * Math.PI / 180)), -halfSize);
         } else if (angle > 90 && angle < 135) {
-            deltaFromLeader = k.vec2(-halfSize*(Math.tan((angle-90) * Math.PI / 180)), -halfSize);
+            deltaFromLeader = vec2(-halfSize*(Math.tan((angle-90) * Math.PI / 180)), -halfSize);
 
         // top left corner
         } else if (angle == 135) {
-            deltaFromLeader = k.vec2(-halfSize, -halfSize);
+            deltaFromLeader = vec2(-halfSize, -halfSize);
         
         // left side    
         } else if (angle > 135 && angle < 225) {
-            deltaFromLeader = k.vec2(-halfSize, halfSize*(Math.tan(angleRad)))
+            deltaFromLeader = vec2(-halfSize, halfSize*(Math.tan(angleRad)))
         
         // bottom left corner
         } else if (angle == 225) {
-            deltaFromLeader = k.vec2(-halfSize, halfSize);
+            deltaFromLeader = vec2(-halfSize, halfSize);
         
         // bottom side
         } else if (angle > 225 && angle <= 270) {
-            deltaFromLeader = k.vec2(-halfSize*(Math.tan((270-angle) * Math.PI / 180)), halfSize);
+            deltaFromLeader = vec2(-halfSize*(Math.tan((270-angle) * Math.PI / 180)), halfSize);
         } else if (angle > 270 && angle < 315) {
-            deltaFromLeader = k.vec2(halfSize*(Math.tan((angle-270) * Math.PI / 180)), halfSize);
+            deltaFromLeader = vec2(halfSize*(Math.tan((angle-270) * Math.PI / 180)), halfSize);
         
         // bottom right corner
         } else {
-            deltaFromLeader = k.vec2(halfSize, halfSize);
+            deltaFromLeader = vec2(halfSize, halfSize);
         }
         return leaderPosition.add(deltaFromLeader);
     }
@@ -118,9 +117,9 @@ export class LineFormation implements Formation {
         const rightSide = this.middlePos > unitId;
 
         if (rightSide) {
-            return leaderPosition.add(k.vec2(this.unitSpace * (1 + unitId), 0));
+            return leaderPosition.add(vec2(this.unitSpace * (1 + unitId), 0));
         } else {
-            return leaderPosition.add(k.vec2(-this.unitSpace * (1 + (unitId - this.middlePos)), 0));
+            return leaderPosition.add(vec2(-this.unitSpace * (1 + (unitId - this.middlePos)), 0));
         }
     }
 }

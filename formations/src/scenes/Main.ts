@@ -1,14 +1,10 @@
-import kaplay from "kaplay";
-import { selectable } from "./selectable.ts"
-import { CircleFormation, DirectedLineFormation, LineFormation, SquareFormation } from "./formations.ts";
-import { lancer, unit } from "./units.ts";
-// import "kaplay/global"; // uncomment if you want to use without the k. prefix
+import {k, PLAYABLE_WIDTH, PLAYABLE_HEIGHT, UNIT_DEBUG_POINT, SIDE_PANEL_WIDTH} from "../App.ts";
 
-const UNIT_DEBUG_POINT = true;
+import { CircleFormation, DirectedLineFormation, SquareFormation } from "../core/Formations.ts";
+import { lancer, unit, UNIT_TAG, LEADER_TAG, ENEMY_TAG } from "../core/Units.ts";
 
-const UNIT_TAG = "unit";
-const LEADER_TAG = "leader";
-const ENEMY_TAG = "enemy";
+const UNIT_SPEED = 100;
+const LEADER_SPEED = UNIT_SPEED + 20;
 
 // units in the group, not counting the leader
 const GROUP_SIZE = 9;
@@ -17,80 +13,10 @@ const SPRITE_SCALE = 0.75;
 const LEADER_SPRITE_WIDTH = 12*16;
 const LANCER_SPRITE_WIDTH = 320;
 
-const UNIT_SPEED = 100;
-const LEADER_SPEED = UNIT_SPEED + 20;
-
-const PLAYABLE_WIDTH = 640;
-const SIDE_PANEL_WIDTH = 200;
-const PLAYABLE_HEIGHT = 640;
-
-const k = kaplay(
-    {
-        background: "#4488AA",
-        width: PLAYABLE_WIDTH + SIDE_PANEL_WIDTH,
-        height: PLAYABLE_HEIGHT,
-    }
-);
-
 let selectedUnit = null;
 
-k.loadRoot("./"); // A good idea for Itch.io publishing later
-
-// load terrain sprites
-k.loadSpriteAtlas("sprites/terrain/Tilemap_color2.png", {
-    "grass": {
-        x: 32,
-        y: 16,
-        width: 8*16,
-        height: 9*16
-    }
-});
-
-
-// load unit sprites
-k.loadSpriteAtlas("sprites/blue/Warrior/Warrior_Spriteset.png", {
-    "blue_warrior": {
-        x: 0,
-        y: 0,
-        width: 1536,
-        height: 384,
-        sliceX: 8,
-        sliceY: 2,
-        anims: {
-            idle: {from: 0, to: 7, loop: true},
-            move: {from: 8, to: 13, loop: true}
-        }
-   } 
-});
-k.loadSpriteAtlas("sprites/red/Warrior/Warrior_Spriteset.png", {
-    "red_warrior": {
-        x: 0,
-        y: 0,
-        width: 1536,
-        height: 384,
-        sliceX: 8,
-        sliceY: 2,
-        anims: {
-            idle: {from: 0, to: 7, loop: true},
-            move: {from: 8, to: 13, loop: true}
-        }
-   } 
-});
-k.loadSprite("blue_lancer","sprites/blue/Lancer/Lancer_Spriteset.png", {
-        x: 0,
-        y: 0,
-        width: 3840,
-        height: 640,
-        sliceX: 12,
-        sliceY: 2,
-        anims: {
-            idle: {from: 0, to: 11, loop: true},
-            move: {from: 12, to: 17, loop: true}
-        }
-   } 
-);
-
-k.scene("main", () => {
+export function createMainScene() {
+    k.scene("main", () => {
     // init yard background
     // yard = that's where the formations happen
     add([k.pos(0,0), k.sprite("grass", {width: PLAYABLE_WIDTH, height: PLAYABLE_HEIGHT, tiled: true})]);
@@ -270,6 +196,4 @@ k.scene("main", () => {
         }
     });
 })
-
-k.go("main");
-
+}

@@ -1,8 +1,11 @@
 import type { Comp, GameObj, PosComp, SpriteComp, StateComp, Vec2 } from "kaplay";
-import { Formation } from "./formations";
+import { Formation } from "./Formations";
+
+export const UNIT_SPEED = 100;
 
 export const UNIT_TAG = "unit";
-export const UNIT_SPEED = 100;
+export const LEADER_TAG = "leader";
+export const ENEMY_TAG = "enemy";
 
 
 /**
