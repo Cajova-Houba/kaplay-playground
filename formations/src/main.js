@@ -242,11 +242,11 @@ k.scene("main", () => {
             circle(LEADER_SPRITE_WIDTH/3.0, {fill: false}), 
             outline(3, Color.YELLOW)
         ]);
-        const currDt = dt();
+        const currTime = time();
         selectedUnit = {
             unit: unit,
             outline: outlineObj,
-            dt: currDt
+            selectedAt: currTime
         }
     });
 
@@ -256,12 +256,13 @@ k.scene("main", () => {
 
         debug.log(pos);
         
-        // if the delta time is not there
+        // if the time is not here
         // the movement would be executed in the same frame as the selection
         // meaning 1) the player would not see the selection outline
         // and 2) the mous position indicating the movement target
         // would be on the selected unit
-        if (selectedUnit != null && dt() != selectedUnit.dt) {
+        debug.log(time());
+        if (selectedUnit != null && Math.abs(time() - selectedUnit.selectedAt) > 0.01) {
             debug.log(selectedUnit.unit.scaledAdjustVector);
             selectedUnit.unit.targetPos = pos.sub(selectedUnit.unit.scaledAdjustVector);
             k.destroy(selectedUnit.outline);

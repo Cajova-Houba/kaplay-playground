@@ -104,7 +104,7 @@ export function lancer(unitId: number, leader: GameObj<PosComp | UnitComp>): Lan
             if (this.formation) {
                 const targetPos = this.formation.calculatePosition(this.oldLeaderPosition, unitId).sub(this.scaledAdjustVector);
                 
-                if (targetPos.dist(this.pos) > 10)  {
+                if (targetPos.dist(this.pos) > 5)  {
                     const targetReached = this.moveUnitTo(targetPos);
                     // debug.log(lancer.state);
                     if (targetReached && this.state != "idle") {
