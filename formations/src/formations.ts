@@ -108,9 +108,8 @@ export class LineFormation implements Formation {
     readonly groupSize: number;
     readonly middlePos: number;
 
-    constructor(groupSize: number) {
-        // todo: configurable
-        this.unitSpace = 50;
+    constructor(groupSize: number, unitSpace?: number) {
+        this.unitSpace = unitSpace ?? 60;
         this.groupSize = groupSize;
         this.middlePos = groupSize / 2;
     }
@@ -133,8 +132,8 @@ export class DirectedLineFormation extends LineFormation {
 
     readonly target: GameObj<PosComp | UnitComp>;
 
-    constructor(groupSize: number, target: GameObj<PosComp | UnitComp>) {
-        super(groupSize);
+    constructor(groupSize: number, target: GameObj<PosComp | UnitComp>, unitSpace?: number) {
+        super(groupSize, unitSpace);
         this.target = target;
     }
 
