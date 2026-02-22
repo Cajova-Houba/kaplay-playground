@@ -1,8 +1,9 @@
 import kaplay from "kaplay";
 import { selectable } from "./selectable.ts"
+import { CircleFormation, SquareFormation } from "./formations.ts";
 // import "kaplay/global"; // uncomment if you want to use without the k. prefix
 
-const UNIT_DEBUG_POINT = false;
+const UNIT_DEBUG_POINT = true;
 
 const UNIT_TAG = "unit";
 const LEADER_TAG = "leader";
@@ -44,16 +45,6 @@ k.loadSpriteAtlas("sprites/terrain/Tilemap_color2.png", {
     }
 });
 
-// formation configuration
-const CIRCLE_FORMATION = {
-    radius: 100,
-    calculatePosition: (leaderPosition, myId) => {
-        const angleRad = (myId * 360 / GROUP_SIZE) * Math.PI / 180;
-        const deltaFromLeader = new Vec2(CIRCLE_FORMATION.radius * Math.cos(angleRad), CIRCLE_FORMATION.radius * Math.sin(angleRad));
-        return leaderPosition.add(deltaFromLeader);
-    }
-};
-
 function moveUnitTo(unit, position, moveSpeed = UNIT_SPEED) {
     if (unit.state == "idle") {
         unit.enterState("move");
@@ -61,7 +52,7 @@ function moveUnitTo(unit, position, moveSpeed = UNIT_SPEED) {
 
     unit.moveTo(position, moveSpeed);
 
-    const currentPos = unit.c("pos").pos;
+    const currentPos = unit.pos;
 
     if (position.x > currentPos.x) {
         unit.c("sprite").flipX = false;
@@ -70,7 +61,7 @@ function moveUnitTo(unit, position, moveSpeed = UNIT_SPEED) {
     }
 
     // check if the target was reached
-    return position.dist(currentPos) < 1;
+    return position.dist(currentPos) < 10;
 }
 
 
@@ -150,8 +141,8 @@ k.scene("main", () => {
         // add center point to each unit
         // for debug purposes
         if (UNIT_DEBUG_POINT) {
-            unit.center = k.pos(0,0).pos.add(unit.scaledAdjustVector);
-            unit.add([k.pos(unit.center), circle(10), color(Color.RED)]);
+            const center = k.pos(0,0).pos.add(unit.adjustVector);
+            unit.add([k.pos(center), circle(10), color(Color.RED)]);
         }
 
         unit.onStateEnter("idle", () => {
@@ -186,6 +177,10 @@ k.scene("main", () => {
         lancer.unitId = unitId;
         lancer.leader = leader;
         
+        if (UNIT_DEBUG_POINT) {
+            lancer.add([k.pos(lancer.adjustVector), text(unitId), color(Color.GREEN)]);
+        }
+
         lancer.onUpdate(() => {
             // keep track of your leader
             lancer.leaderPosition = leader.getCenter();
@@ -198,13 +193,14 @@ k.scene("main", () => {
             if (lancer.formation) {
                 const targetPos = lancer.formation.calculatePosition(lancer.oldLeaderPosition, unitId).sub(lancer.scaledAdjustVector);
                 
-                if (targetPos.dist(lancer.pos.pos) > 1)  {
+                if (targetPos.dist(lancer.pos.pos) > 10)  {
                     const targetReached = moveUnitTo(lancer, targetPos);
-                    if (targetReached) {
+                    // debug.log(lancer.state);
+                    if (targetReached && lancer.state != "idle") {
                         lancer.enterState("idle");
                         // lancer.formation = null;
                     }
-                } else {
+                } else if (lancer.state != "idle") {
                     lancer.enterState("idle");
                 }
                 
@@ -242,8 +238,9 @@ k.scene("main", () => {
     })
     const circleFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 100), area(), text("Circle formation", {size: 16}), "circleFormationButton"]);
     circleFormationBtn.onClick(() => {
+        const circleFormation = new CircleFormation(GROUP_SIZE);
         group.forEach(unit => {
-            unit.formation = CIRCLE_FORMATION;
+            unit.formation = circleFormation;
         });
 
 
@@ -262,9 +259,12 @@ k.scene("main", () => {
         // }
     });
 
-    const lineFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 150), area(), text("Line formation", {size: 16}), "speedUpgradeButton"]);
-    lineFormationBtn.onClick(() => {
-
+    const squareFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 150), area(), text("Square formation", {size: 16}), "squareFormationBtn"]);
+    squareFormationBtn.onClick(() => {
+        const formation = new SquareFormation(GROUP_SIZE);
+        group.forEach(unit => {
+            unit.formation = formation;
+        });
     });
 
 
