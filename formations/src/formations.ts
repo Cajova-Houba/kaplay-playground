@@ -1,5 +1,6 @@
-import type { Vec2 } from "kaplay";
+import type { GameObj, PosComp, Vec2 } from "kaplay";
 import kaplay from "kaplay";
+import { UnitComp } from "./units";
 const k = kaplay({ global: false });
 
 export interface Formation {
@@ -96,4 +97,59 @@ export class SquareFormation implements Formation {
         return leaderPosition.add(deltaFromLeader);
     }
 
+}
+
+/**
+ * Line formation with the leader in the middle.
+ */
+export class LineFormation implements Formation {
+
+    readonly unitSpace: number;
+    readonly groupSize: number;
+    readonly middlePos: number;
+
+    constructor(groupSize: number) {
+        // todo: configurable
+        this.unitSpace = 50;
+        this.groupSize = groupSize;
+        this.middlePos = groupSize / 2;
+    }
+
+    calculatePosition(leaderPosition: Vec2, unitId: number): Vec2 {
+        const rightSide = this.middlePos > unitId;
+
+        if (rightSide) {
+            return leaderPosition.add(k.vec2(this.unitSpace * (1 + unitId), 0));
+        } else {
+            return leaderPosition.add(k.vec2(-this.unitSpace * (1 + (unitId - this.middlePos)), 0));
+        }
+    }
+}
+
+/**
+ * Line formation with the leader in the middle, directed towards a target.
+ */
+export class DirectedLineFormation extends LineFormation {
+
+    readonly target: GameObj<PosComp | UnitComp>;
+
+    constructor(groupSize: number, target: GameObj<PosComp | UnitComp>) {
+        super(groupSize);
+        this.target = target;
+    }
+
+    calculatePosition(leaderPosition: Vec2, unitId: number): Vec2 {
+        // direction vector
+        const leaderToTarget = this.target.getCenter().sub(leaderPosition);
+
+        const formationNormal = leaderToTarget.normal().unit().scale(this.unitSpace);
+
+        const rightSide = this.middlePos > unitId;
+
+        if (rightSide) {
+            return leaderPosition.add(formationNormal.scale(1 + unitId));
+        } else {
+            return leaderPosition.sub(formationNormal.scale(unitId - this.middlePos));
+        }
+    }
 }

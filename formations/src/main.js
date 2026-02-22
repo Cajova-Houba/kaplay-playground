@@ -1,6 +1,6 @@
 import kaplay from "kaplay";
 import { selectable } from "./selectable.ts"
-import { CircleFormation, SquareFormation } from "./formations.ts";
+import { CircleFormation, DirectedLineFormation, LineFormation, SquareFormation } from "./formations.ts";
 import { lancer, unit } from "./units.ts";
 // import "kaplay/global"; // uncomment if you want to use without the k. prefix
 
@@ -213,6 +213,14 @@ k.scene("main", () => {
     const squareFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 150), area(), text("Square formation", {size: 16}), "squareFormationBtn"]);
     squareFormationBtn.onClick(() => {
         const formation = new SquareFormation(GROUP_SIZE);
+        group.forEach(unit => {
+            unit.formation = formation;
+        });
+    });
+
+    const lineFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 200), area(), text("Line formation", {size: 16}), "lineFormationBtn"]);
+    lineFormationBtn.onClick(() => {
+        const formation = new DirectedLineFormation(GROUP_SIZE, enemy);
         group.forEach(unit => {
             unit.formation = formation;
         });
