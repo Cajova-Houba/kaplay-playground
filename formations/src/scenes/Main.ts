@@ -1,17 +1,12 @@
 import {k, PLAYABLE_WIDTH, PLAYABLE_HEIGHT, SIDE_PANEL_WIDTH} from "../App.ts";
 import { CircleFormation, DirectedLineFormation, SquareFormation } from "../core/Formations.ts";
 import { spawnLeader, spawnLancer, LEADER_TAG, ENEMY_TAG, LancerComp, FormationComp } from "../core/Units.ts";
-import type { GameObj } from "kaplay";
-
-const UNIT_SPEED = 100;
-const LEADER_SPEED = UNIT_SPEED + 20;
+import type { GameObj, StateComp } from "kaplay";
 
 // units in the group, not counting the leader
 const GROUP_SIZE = 9;
 
-const SPRITE_SCALE = 0.75;
 const LEADER_SPRITE_WIDTH = 12*16;
-const LANCER_SPRITE_WIDTH = 320;
 
 class SelectedUnit {
     unit: GameObj;
@@ -38,7 +33,7 @@ export function createMainScene() {
     enemy.tag([LEADER_TAG, ENEMY_TAG]);
 
     // group
-    const group: GameObj<LancerComp | FormationComp>[] = [];
+    const group: GameObj<LancerComp | FormationComp | StateComp>[] = [];
 
     // group leader
     const leader = spawnLeader(k.pos(300,300), "blue_warrior");

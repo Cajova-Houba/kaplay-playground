@@ -205,14 +205,14 @@ export function spawnUnit(position: PosComp, spriteName: string, flipX: boolean 
 }
 
 export function spawnLeader(position: PosComp,  spriteName: string, flipX: boolean = false)
-            : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp>
-    {
+    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp> {
     const l = spawnUnit(position, spriteName, flipX, LEADER_SCALE, LEADER_SPRITE_WIDTH, LEADER_SPRITE_WIDTH, LEADER_SPEED);
 
     return l;
 }
 
-export function spawnLancer(position: PosComp, unitId: number, leader: GameObj<PosComp | UnitComp>) {
+export function spawnLancer(position: PosComp, unitId: number, leader: GameObj<PosComp | StateComp | UnitComp>)
+    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp | LancerComp> {
         const newLancer = spawnUnit(position, "blue_lancer", false, DEFAULT_SPRITE_SCALE, LANCER_SPRITE_WIDTH, LANCER_SPRITE_WIDTH);
         newLancer.use(lancer(unitId, leader))
         newLancer.use(formation())
