@@ -27,7 +27,7 @@ export class CircleFormation implements Formation {
 
     calculatePosition(leaderPosition: Vec2, unitId: number): Vec2 {
         const angleRad = (unitId * 360 / this.groupSize) * Math.PI / 180;
-        const deltaFromLeader = vec2(this.radius * Math.cos(angleRad), this.radius * Math.sin(angleRad));
+        const deltaFromLeader = vec2(this.radius * Math.cos(angleRad), -this.radius * Math.sin(angleRad));
         return leaderPosition.add(deltaFromLeader);
     }
 }
