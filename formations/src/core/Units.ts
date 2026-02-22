@@ -16,6 +16,16 @@ const LEADER_SPRITE_WIDTH = 12*16;
 const LANCER_SPRITE_WIDTH = 320;
 const LEADER_SCALE = 0.8;
 
+export interface FormationComp extends Comp {
+    formation?: Formation | null;
+}
+
+export function formation(): FormationComp {
+    return {
+        id: "formation"
+    }
+}
+
 export interface MovementComp extends Comp {
     speed: number;
     targetPos?: Vec2 | null;
@@ -205,6 +215,7 @@ export function spawnLeader(position: PosComp,  spriteName: string, flipX: boole
 export function spawnLancer(position: PosComp, unitId: number, leader: GameObj<PosComp | UnitComp>) {
         const newLancer = spawnUnit(position, "blue_lancer", false, DEFAULT_SPRITE_SCALE, LANCER_SPRITE_WIDTH, LANCER_SPRITE_WIDTH);
         newLancer.use(lancer(unitId, leader))
+        newLancer.use(formation())
         
         if (UNIT_DEBUG_POINT) {
             newLancer.add([pos(newLancer.adjustVector), text(unitId), color(Color.GREEN)]);

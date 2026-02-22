@@ -1,6 +1,6 @@
 import {k, PLAYABLE_WIDTH, PLAYABLE_HEIGHT, SIDE_PANEL_WIDTH} from "../App.ts";
 import { CircleFormation, DirectedLineFormation, SquareFormation } from "../core/Formations.ts";
-import { spawnLeader, spawnLancer, LEADER_TAG, ENEMY_TAG, LancerComp, UnitComp } from "../core/Units.ts";
+import { spawnLeader, spawnLancer, LEADER_TAG, ENEMY_TAG, LancerComp, FormationComp } from "../core/Units.ts";
 import type { GameObj } from "kaplay";
 
 const UNIT_SPEED = 100;
@@ -38,7 +38,7 @@ export function createMainScene() {
     enemy.tag([LEADER_TAG, ENEMY_TAG]);
 
     // group
-    const group: GameObj<LancerComp>[] = [];
+    const group: GameObj<LancerComp | FormationComp>[] = [];
 
     // group leader
     const leader = spawnLeader(k.pos(300,300), "blue_warrior");
