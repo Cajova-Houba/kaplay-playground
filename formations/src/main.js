@@ -1,6 +1,7 @@
 import kaplay from "kaplay";
 import { selectable } from "./selectable.ts"
 import { CircleFormation, SquareFormation } from "./formations.ts";
+import { lancer, unit } from "./units.ts";
 // import "kaplay/global"; // uncomment if you want to use without the k. prefix
 
 const UNIT_DEBUG_POINT = true;
@@ -44,25 +45,6 @@ k.loadSpriteAtlas("sprites/terrain/Tilemap_color2.png", {
         height: 9*16
     }
 });
-
-function moveUnitTo(unit, position, moveSpeed = UNIT_SPEED) {
-    if (unit.state == "idle") {
-        unit.enterState("move");
-    }
-
-    unit.moveTo(position, moveSpeed);
-
-    const currentPos = unit.pos;
-
-    if (position.x > currentPos.x) {
-        unit.c("sprite").flipX = false;
-    } else {
-        unit.c("sprite").flipX = true;
-    }
-
-    // check if the target was reached
-    return position.dist(currentPos) < 10;
-}
 
 
 // load unit sprites
@@ -123,35 +105,31 @@ k.scene("main", () => {
         const adjustVector = new Vec2(spriteWidth/2.0, spriteHeight/2.0);
         const adjustedPos = pos.pos.sub(adjustVector);
 
-        const unit = add([k.pos(adjustedPos), 
+        const newUnit = add([k.pos(adjustedPos), 
             k.sprite(spriteName, 
                 {anim: "idle", speed: unitSpeed, flipX: flipX},
             ),
             scale(unitScale), 
             k.area(),
+            unit(adjustVector, adjustVector.scale(unitScale)),
             state("idle", states),
             UNIT_TAG
         ]);
-        unit.adjustVector = adjustVector;
-        unit.scaledAdjustVector = adjustVector.scale(unitScale);
-        unit.getCenter = () => {
-            return unit.pos.add(unit.scaledAdjustVector);
-        }
 
         // add center point to each unit
         // for debug purposes
         if (UNIT_DEBUG_POINT) {
-            const center = k.pos(0,0).pos.add(unit.adjustVector);
-            unit.add([k.pos(center), circle(10), color(Color.RED)]);
+            const center = k.pos(0,0).pos.add(newUnit.adjustVector);
+            newUnit.add([k.pos(center), circle(10), color(Color.RED)]);
         }
 
-        unit.onStateEnter("idle", () => {
-            unit.play("idle")
+        newUnit.onStateEnter("idle", () => {
+            newUnit.play("idle")
         })
-        unit.onStateEnter("move", () => {
-            unit.play("move");
+        newUnit.onStateEnter("move", () => {
+            newUnit.play("move");
         });
-        return unit;
+        return newUnit;
     }
 
     const spawnLeader = (pos, spriteName, flipX = false) => {
@@ -160,7 +138,7 @@ k.scene("main", () => {
         l.onUpdate(() => {
             if (l.targetPos) {
                 const targetPos = l.targetPos;
-                const targetReached = moveUnitTo(l, targetPos, LEADER_SPEED);
+                const targetReached = l.moveUnitTo(targetPos, LEADER_SPEED);
                 if (targetReached) {
                     l.targetPos = null;
                     l.enterState("idle");
@@ -173,41 +151,14 @@ k.scene("main", () => {
     }
 
     const spawnLancer = (pos, unitId, leader) => {
-        const lancer = spawnUnit(pos, "blue_lancer", false, SPRITE_SCALE, LANCER_SPRITE_WIDTH, LANCER_SPRITE_WIDTH);
-        lancer.unitId = unitId;
-        lancer.leader = leader;
+        const newLancer = spawnUnit(pos, "blue_lancer", false, SPRITE_SCALE, LANCER_SPRITE_WIDTH, LANCER_SPRITE_WIDTH);
+        newLancer.use(lancer(unitId, leader))
         
         if (UNIT_DEBUG_POINT) {
-            lancer.add([k.pos(lancer.adjustVector), text(unitId), color(Color.GREEN)]);
+            newLancer.add([k.pos(newLancer.adjustVector), text(unitId), color(Color.GREEN)]);
         }
 
-        lancer.onUpdate(() => {
-            // keep track of your leader
-            lancer.leaderPosition = leader.getCenter();
-
-            if (lancer.oldLeaderPosition == null || lancer.oldLeaderPosition.dist(lancer.leaderPosition) > 30) {
-                lancer.oldLeaderPosition = lancer.leaderPosition;
-            }
-
-            // handle formation
-            if (lancer.formation) {
-                const targetPos = lancer.formation.calculatePosition(lancer.oldLeaderPosition, unitId).sub(lancer.scaledAdjustVector);
-                
-                if (targetPos.dist(lancer.pos.pos) > 10)  {
-                    const targetReached = moveUnitTo(lancer, targetPos);
-                    // debug.log(lancer.state);
-                    if (targetReached && lancer.state != "idle") {
-                        lancer.enterState("idle");
-                        // lancer.formation = null;
-                    }
-                } else if (lancer.state != "idle") {
-                    lancer.enterState("idle");
-                }
-                
-            }
-        });
-
-        return lancer;
+        return newLancer;
     }
 
     // spawn enemy
