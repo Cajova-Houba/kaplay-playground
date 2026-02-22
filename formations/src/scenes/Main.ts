@@ -9,6 +9,7 @@ const LEADER_SPEED = UNIT_SPEED + 20;
 // units in the group, not counting the leader
 const GROUP_SIZE = 9;
 
+const LEADER_SCALE = 0.8;
 const SPRITE_SCALE = 0.75;
 const LEADER_SPRITE_WIDTH = 12*16;
 const LANCER_SPRITE_WIDTH = 320;
@@ -59,7 +60,7 @@ export function createMainScene() {
     }
 
     const spawnLeader = (pos, spriteName, flipX = false) => {
-        const l = spawnUnit(pos, spriteName, flipX, SPRITE_SCALE, LEADER_SPRITE_WIDTH, LEADER_SPRITE_WIDTH, LEADER_SPEED);
+        const l = spawnUnit(pos, spriteName, flipX, LEADER_SCALE, LEADER_SPRITE_WIDTH, LEADER_SPRITE_WIDTH, LEADER_SPEED);
 
         l.onUpdate(() => {
             if (l.targetPos) {
@@ -157,22 +158,22 @@ export function createMainScene() {
     onClick(LEADER_TAG, (unit) => {
         if (selectedUnit != null) {
             k.destroy(selectedUnit.outline);
-        }
+        } else {
+            const p = unit.c("pos").pos;
 
-        const p = unit.c("pos").pos;
+            debug.log("Selecting unit "+unit);
 
-        debug.log("Selecting unit "+unit);
-
-        const outlineObj = k.add([
-            k.pos(p.x + LEADER_SPRITE_WIDTH/2.8, p.y + LEADER_SPRITE_WIDTH/2.8),
-            circle(LEADER_SPRITE_WIDTH/3.0, {fill: false}), 
-            outline(3, Color.YELLOW)
-        ]);
-        const currTime = time();
-        selectedUnit = {
-            unit: unit,
-            outline: outlineObj,
-            selectedAt: currTime
+            const outlineObj = k.add([
+                k.pos(p.x + LEADER_SPRITE_WIDTH/2.8, p.y + LEADER_SPRITE_WIDTH/2.8),
+                circle(LEADER_SPRITE_WIDTH/3.0, {fill: false}), 
+                outline(3, Color.YELLOW)
+            ]);
+            const currTime = time();
+            selectedUnit = {
+                unit: unit,
+                outline: outlineObj,
+                selectedAt: currTime
+            }
         }
     });
 
@@ -188,7 +189,7 @@ export function createMainScene() {
         // and 2) the mous position indicating the movement target
         // would be on the selected unit
         debug.log(time());
-        if (selectedUnit != null && Math.abs(time() - selectedUnit.selectedAt) > 0.01) {
+        if (selectedUnit != null && pos.x <= PLAYABLE_WIDTH && Math.abs(time() - selectedUnit.selectedAt) > 0.01) {
             debug.log(selectedUnit.unit.scaledAdjustVector);
             selectedUnit.unit.targetPos = pos.sub(selectedUnit.unit.scaledAdjustVector);
             k.destroy(selectedUnit.outline);
