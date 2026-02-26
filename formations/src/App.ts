@@ -4,7 +4,7 @@ import { createMainScene } from "./scenes/Main.ts";
 
 export const UNIT_DEBUG_POINT = true;
 export const PLAYABLE_WIDTH = 640;
-export const SIDE_PANEL_WIDTH = 200;
+export const SIDE_PANEL_WIDTH = 260;
 export const PLAYABLE_HEIGHT = 640;
 
 export const k = kaplay(
@@ -16,6 +16,40 @@ export const k = kaplay(
 );
 
 k.loadRoot("./"); // A good idea for Itch.io publishing later
+
+// UI sprites
+k.loadSpriteAtlas( "sprites/ui/ribbons/SmallRibbons.png", {
+    "big_ribbon_red_start": {
+        x: 2,
+        y: 132,
+        width: 62,
+        height: 60
+    },
+    "big_ribbon_red": {
+        x: 130,
+        y: 132,
+        width: 62,
+        height: 60
+    },
+    "big_ribbon_red_end": {
+        x: 256,
+        y: 132,
+        width: 62,
+        height: 60
+    }
+});
+// k.loadSprite("big_ribbon_red", "sprites/ui/ribbons/SmallRibbons.png", {
+//     x: 162,
+//     y: 0,
+//     width: 63,
+//     height: 103
+// });
+// k.loadSprite("big_ribbon_red_end", "sprites/ui/ribbons/SmallRibbons.png", {
+//     x: 290,
+//     y: 0,
+//     width: 98,
+//     height: 103
+// });
 
 // load terrain sprites
 k.loadSpriteAtlas("sprites/terrain/Tilemap_color2.png", {

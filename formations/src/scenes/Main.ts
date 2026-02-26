@@ -48,13 +48,17 @@ export function createMainScene() {
     
     
     // controls
-    const cacncelFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 50), area(), text("Cancel formation", {size: 16}), "cancelFormationButton"]); 
+    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 6, 30), k.sprite("big_ribbon_red_start", {width: 62, height: 60, tiled: false}), area()]);
+    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62, 30), k.sprite("big_ribbon_red", {width: 124, height: 60, tiled: true}), area()]);
+    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62 + 124, 30), k.sprite("big_ribbon_red_end", {width: 62, height: 60, tiled: false}), area()]);
+    const cacncelFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 55, 50), area({shape: new Rect(vec2(0,0), 248, 62), offset: vec2(-30, -25)}), text("Cancel formation", {size: 16}), "cancelFormationButton"]); 
     cacncelFormationBtn.onClick(() => {
         group.forEach(unit => {
             unit.formation = null;
             unit.enterState("idle");
         });
     })
+    
     const circleFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 100), area(), text("Circle formation", {size: 16}), "circleFormationButton"]);
     circleFormationBtn.onClick(() => {
         const circleFormation = new CircleFormation(GROUP_SIZE);
