@@ -36,20 +36,26 @@ k.loadSpriteAtlas( "sprites/ui/ribbons/SmallRibbons.png", {
         y: 132,
         width: 62,
         height: 60
+    },
+    "big_ribbon_blue_start": {
+        x: 2,
+        y: 4,
+        width: 62,
+        height: 60
+    },
+    "big_ribbon_blue": {
+        x: 130,
+        y: 4,
+        width: 62,
+        height: 60
+    },
+    "big_ribbon_blue_end": {
+        x: 256,
+        y: 4,
+        width: 62,
+        height: 60
     }
 });
-// k.loadSprite("big_ribbon_red", "sprites/ui/ribbons/SmallRibbons.png", {
-//     x: 162,
-//     y: 0,
-//     width: 63,
-//     height: 103
-// });
-// k.loadSprite("big_ribbon_red_end", "sprites/ui/ribbons/SmallRibbons.png", {
-//     x: 290,
-//     y: 0,
-//     width: 98,
-//     height: 103
-// });
 
 // load terrain sprites
 k.loadSpriteAtlas("sprites/terrain/Tilemap_color2.png", {

@@ -59,7 +59,10 @@ export function createMainScene() {
         });
     })
     
-    const circleFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 100), area(), text("Circle formation", {size: 16}), "circleFormationButton"]);
+    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 6, 100), k.sprite("big_ribbon_blue_start", {width: 62, height: 60, tiled: false}), area()]);
+    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62, 100), k.sprite("big_ribbon_blue", {width: 124, height: 60, tiled: true}), area()]);
+    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62 + 124, 100), k.sprite("big_ribbon_blue_end", {width: 62, height: 60, tiled: false}), area()]);
+    const circleFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 55, 120), area({shape: new Rect(vec2(0,0), 248, 62), offset: vec2(-30, -25)}), text("Circle formation", {size: 16}), "circleFormationButton"]);
     circleFormationBtn.onClick(() => {
         const circleFormation = new CircleFormation(GROUP_SIZE);
         group.forEach(unit => {
@@ -82,7 +85,10 @@ export function createMainScene() {
         // }
     });
 
-    const squareFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 150), area(), text("Square formation", {size: 16}), "squareFormationBtn"]);
+    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 6, 170), k.sprite("big_ribbon_blue_start", {width: 62, height: 60, tiled: false}), area()]);
+    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62, 170), k.sprite("big_ribbon_blue", {width: 124, height: 60, tiled: true}), area()]);
+    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62 + 124, 170), k.sprite("big_ribbon_blue_end", {width: 62, height: 60, tiled: false}), area()]);
+    const squareFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 55, 190), area({shape: new Rect(vec2(0,0), 248, 62), offset: vec2(-30, -25)}), text("Square formation", {size: 16}), "squareFormationBtn"]);
     squareFormationBtn.onClick(() => {
         const formation = new SquareFormation(GROUP_SIZE);
         group.forEach(unit => {
@@ -90,7 +96,10 @@ export function createMainScene() {
         });
     });
 
-    const lineFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 10, 200), area(), text("Line formation", {size: 16}), "lineFormationBtn"]);
+    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 6, 240), k.sprite("big_ribbon_blue_start", {width: 62, height: 60, tiled: false}), area()]);
+    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62, 240), k.sprite("big_ribbon_blue", {width: 124, height: 60, tiled: true}), area()]);
+    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62 + 124, 240), k.sprite("big_ribbon_blue_end", {width: 62, height: 60, tiled: false}), area()]);
+    const lineFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 67, 260), area({shape: new Rect(vec2(0,0), 248, 62), offset: vec2(-30, -25)}), text("Line formation", {size: 16}), "lineFormationBtn"]);
     lineFormationBtn.onClick(() => {
         const formation = new DirectedLineFormation(GROUP_SIZE, enemy);
         group.forEach(unit => {
