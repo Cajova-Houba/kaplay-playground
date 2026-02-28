@@ -151,3 +151,49 @@ export class DirectedLineFormation extends LineFormation {
         }
     }
 }
+
+export class MultilineFormation implements Formation {
+    
+    readonly unitSpace: number;
+    readonly groupSize: number;
+    readonly target: GameObj<PosComp | UnitComp>;
+    readonly unitsPerLine: number;
+    readonly middlePos: number;
+
+    constructor(groupSize: number, target: GameObj<PosComp | UnitComp>, unitSpace: number = 60, unitsPerLine: number = 3) {
+        this.unitSpace = unitSpace;
+        this.groupSize = groupSize;
+        this.target = target;
+        this.unitsPerLine = unitsPerLine;
+        this.middlePos = Math.floor(unitsPerLine / 2.0);
+
+        if (unitsPerLine < 2) {
+            throw new Error("Units per line must be at least 2");
+        }
+    }
+
+    calculatePosition(leaderPosition: Vec2, unitId: number): Vec2 {
+        // direction vector
+        const leaderToTarget = this.target.getCenter().sub(leaderPosition);
+
+        const formationNormal = leaderToTarget.normal().unit().scale(this.unitSpace);
+        const lineVector = leaderToTarget.unit().scale(this.unitSpace);
+
+        const lineIndex = Math.floor(unitId / this.unitsPerLine);
+        const positionInLine = unitId % this.unitsPerLine;
+
+        const shiftVector = 
+            // from the leader to the left side of the line = start of the line
+            formationNormal.scale(-1 * this.middlePos)
+            
+            // shift by line index
+            .add(lineVector.scale(-1 * (1+lineIndex)))
+            
+            // shift by position in line
+            .add(formationNormal.scale(positionInLine));
+
+        console.log("Unit id: "+unitId+", line index: "+lineIndex+", position in line: "+positionInLine+", shift vector: "+shiftVector);
+
+        return leaderPosition.add(shiftVector);
+    }
+}
