@@ -173,6 +173,14 @@ export class MultilineFormation implements Formation {
     }
 
     calculatePosition(leaderPosition: Vec2, unitId: number): Vec2 {
+        // the general vector formula for getting the position is:
+        // P = LEADER -3xN -1 (1+ L_i)xL + P_ixN
+        // where:
+        // N = normal vector to the direction from the leader to the target, scaled by unit space
+        // L = line vector in the direction from the leader to the target, scaled by unit space
+        // L_i = line index (0 for the line closest to the leader, 1 for the second line, etc.)
+        // P_i = position in line (0 for the leftmost unit, 1 for the second unit from the left, etc.)
+
         // direction vector
         const leaderToTarget = this.target.getCenter().sub(leaderPosition);
 

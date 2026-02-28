@@ -74,7 +74,7 @@ export function createMainScene() {
             unit.formation = formation;
         });
     });
-    createBlueButton(k.width() - SIDE_PANEL_WIDTH + 5, 310, 60, 20, "2 Line formation", () => {
+    createBlueButton(k.width() - SIDE_PANEL_WIDTH + 5, 310, 60, 20, "3 Line formation", () => {
         const formation = new MultilineFormation(GROUP_SIZE, enemy, 60, 3);
         group.forEach(unit => {
             unit.formation = formation;
