@@ -2,6 +2,7 @@ import {k, PLAYABLE_WIDTH, PLAYABLE_HEIGHT, SIDE_PANEL_WIDTH} from "../App.ts";
 import { CircleFormation, DirectedLineFormation, SquareFormation } from "../core/Formations.ts";
 import { spawnLeader, spawnLancer, LEADER_TAG, ENEMY_TAG, LancerComp, FormationComp } from "../core/Units.ts";
 import type { GameObj, StateComp } from "kaplay";
+import { createBlueButton, createRedButton } from "../ui/Ui.ts";
 
 // units in the group, not counting the leader
 const GROUP_SIZE = 9;
@@ -48,59 +49,26 @@ export function createMainScene() {
     
     
     // controls
-    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 6, 30), k.sprite("big_ribbon_red_start", {width: 62, height: 60, tiled: false}), area()]);
-    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62, 30), k.sprite("big_ribbon_red", {width: 124, height: 60, tiled: true}), area()]);
-    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62 + 124, 30), k.sprite("big_ribbon_red_end", {width: 62, height: 60, tiled: false}), area()]);
-    const cacncelFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 55, 50), area({shape: new Rect(vec2(0,0), 248, 62), offset: vec2(-30, -25)}), text("Cancel formation", {size: 16}), "cancelFormationButton"]); 
-    cacncelFormationBtn.onClick(() => {
+    createRedButton(k.width() - SIDE_PANEL_WIDTH + 5, 30, 50, 20, "Cancel formation", () => {
         group.forEach(unit => {
             unit.formation = null;
             unit.enterState("idle");
         });
-    })
-    
-    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 6, 100), k.sprite("big_ribbon_blue_start", {width: 62, height: 60, tiled: false}), area()]);
-    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62, 100), k.sprite("big_ribbon_blue", {width: 124, height: 60, tiled: true}), area()]);
-    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62 + 124, 100), k.sprite("big_ribbon_blue_end", {width: 62, height: 60, tiled: false}), area()]);
-    const circleFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 55, 120), area({shape: new Rect(vec2(0,0), 248, 62), offset: vec2(-30, -25)}), text("Circle formation", {size: 16}), "circleFormationButton"]);
-    circleFormationBtn.onClick(() => {
+    });
+
+    createBlueButton(k.width() - SIDE_PANEL_WIDTH + 5, 100, 50, 20, "Circle formation", () => {
         const circleFormation = new CircleFormation(GROUP_SIZE);
         group.forEach(unit => {
             unit.formation = circleFormation;
         });
-
-
-        // debugging
-        // const start = leader.pos.add(leader.adjustVector);
-        // const start = leader.pos;
-        // const start = leader.pos.add(leader.adjustVector.scale(SPRITE_SCALE));
-        // const start = leader.getCenter()
-
-        // add([k.pos(start), circle(10), color(Color.BLACK)]);
-
-        // for (let index = 0; index < group.length; index++) {
-        //     const target = CIRCLE_FORMATION.calculatePosition(start, index);
-        //     debug.log(start, target);
-        //     add([k.pos(target), circle(10), color(Color.BLACK)]);
-        // }
     });
-
-    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 6, 170), k.sprite("big_ribbon_blue_start", {width: 62, height: 60, tiled: false}), area()]);
-    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62, 170), k.sprite("big_ribbon_blue", {width: 124, height: 60, tiled: true}), area()]);
-    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62 + 124, 170), k.sprite("big_ribbon_blue_end", {width: 62, height: 60, tiled: false}), area()]);
-    const squareFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 55, 190), area({shape: new Rect(vec2(0,0), 248, 62), offset: vec2(-30, -25)}), text("Square formation", {size: 16}), "squareFormationBtn"]);
-    squareFormationBtn.onClick(() => {
+    createBlueButton(k.width() - SIDE_PANEL_WIDTH + 5, 170, 50, 20, "Square formation", () => {
         const formation = new SquareFormation(GROUP_SIZE);
         group.forEach(unit => {
             unit.formation = formation;
         });
     });
-
-    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 6, 240), k.sprite("big_ribbon_blue_start", {width: 62, height: 60, tiled: false}), area()]);
-    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62, 240), k.sprite("big_ribbon_blue", {width: 124, height: 60, tiled: true}), area()]);
-    add([k.pos(k.width() - SIDE_PANEL_WIDTH + 5 + 62 + 124, 240), k.sprite("big_ribbon_blue_end", {width: 62, height: 60, tiled: false}), area()]);
-    const lineFormationBtn = add([k.pos(k.width() - SIDE_PANEL_WIDTH + 67, 260), area({shape: new Rect(vec2(0,0), 248, 62), offset: vec2(-30, -25)}), text("Line formation", {size: 16}), "lineFormationBtn"]);
-    lineFormationBtn.onClick(() => {
+    createBlueButton(k.width() - SIDE_PANEL_WIDTH + 5, 240, 60, 20, "Line formation", () => {
         const formation = new DirectedLineFormation(GROUP_SIZE, enemy);
         group.forEach(unit => {
             unit.formation = formation;
