@@ -38,12 +38,17 @@ export function createMainScene() {
 
     // group leader
     const leader = spawnLeader(k.pos(300,300), "blue_warrior");
+    leader.faceTowardsTo = enemy;
     leader.tag(LEADER_TAG);
+
+    // make bothe leaders face each other
+    enemy.faceTowardsTo = leader;
 
     // spawn units
     for(let i = 0; i < GROUP_SIZE; i++) {
         const p = rand(vec2(PLAYABLE_WIDTH+20, height()));
         const unit = spawnLancer(k.pos(p), i, leader);
+        unit.faceTowardsTo = enemy;
         group.push(unit);
     }
     

@@ -72,6 +72,30 @@ export function movement(speed: number): MovementComp {
 }
 
 /**
+ * Face towards an enemy.
+ */
+export interface FaceTowardsTargetComp extends Comp {
+    faceTowardsTo: GameObj<PosComp | UnitComp | StateComp> | null;
+}
+
+export function faceTowardsTarget(target?: GameObj<PosComp | UnitComp | StateComp>): FaceTowardsTargetComp {
+    return {
+        id: "faceTowardsTarget",
+        faceTowardsTo: target ?? null,
+        update(this: GameObj<FaceTowardsTargetComp | SpriteComp | PosComp | UnitComp>) {
+            if (this.faceTowardsTo) {
+                const targetPos = this.faceTowardsTo.getCenter();
+                if (targetPos.x > this.getCenter().x) {
+                    this.flipX = false;
+                } else {
+                    this.flipX = true;
+                } 
+            }
+        }
+    }
+}
+
+/**
  * Unit component. Requires the following comps: pos, sprite, state.
  */
 export interface UnitComp extends Comp {
@@ -89,7 +113,7 @@ export interface UnitComp extends Comp {
     /**
      * Returns the center of this unit (using its position and scaledAdjustVector).
      */
-    getCenter(): Vec2;    
+    getCenter(): Vec2;
 }
 
 export function unit(adjustVector: Vec2, scaledAdjustVector: Vec2): UnitComp {
@@ -149,10 +173,8 @@ export function lancer(unitId: number, leader: GameObj<PosComp | UnitComp>): Lan
                 
                 if (targetPos.dist(this.pos) > 5)  {
                     const targetReached = this.moveUnitTo(targetPos);
-                    // debug.log(lancer.state);
                     if (targetReached && this.state != "idle") {
                         this.enterState("idle");
-                        // lancer.formation = null;
                     }
                 } else if (this.state != "idle") {
                     this.enterState("idle");
@@ -165,9 +187,15 @@ export function lancer(unitId: number, leader: GameObj<PosComp | UnitComp>): Lan
     return newLancer;
 }
 
-export function spawnUnit(position: PosComp, spriteName: string, flipX: boolean = false, unitScale: number = DEFAULT_SPRITE_SCALE, spriteWidth: number = LEADER_SPRITE_WIDTH, 
-    spriteHeight: number = LEADER_SPRITE_WIDTH, unitSpeed: number = UNIT_SPEED, states = ["idle", "move"])
-    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp>
+export function spawnUnit(position: PosComp, 
+    spriteName: string, 
+    flipX: boolean = false, 
+    unitScale: number = DEFAULT_SPRITE_SCALE, 
+    spriteWidth: number = LEADER_SPRITE_WIDTH, 
+    spriteHeight: number = LEADER_SPRITE_WIDTH, 
+    unitSpeed: number = UNIT_SPEED, 
+    states = ["idle", "move"])
+    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp | FaceTowardsTargetComp>
     {
     // we expect the pos to be the center point 
     // but we need to adjust it to the top left corner
@@ -182,6 +210,7 @@ export function spawnUnit(position: PosComp, spriteName: string, flipX: boolean 
         ),
         scale(unitScale), 
         area(),
+        faceTowardsTarget(),
         unit(adjustVector, adjustVector.scale(unitScale)),
         state("idle", states),
         movement(unitSpeed),
@@ -205,14 +234,14 @@ export function spawnUnit(position: PosComp, spriteName: string, flipX: boolean 
 }
 
 export function spawnLeader(position: PosComp,  spriteName: string, flipX: boolean = false)
-    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp> {
+    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp | FaceTowardsTargetComp> {
     const l = spawnUnit(position, spriteName, flipX, LEADER_SCALE, LEADER_SPRITE_WIDTH, LEADER_SPRITE_WIDTH, LEADER_SPEED);
 
     return l;
 }
 
 export function spawnLancer(position: PosComp, unitId: number, leader: GameObj<PosComp | StateComp | UnitComp>)
-    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp | LancerComp> {
+    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp | LancerComp | FaceTowardsTargetComp> {
         const newLancer = spawnUnit(position, "blue_lancer", false, DEFAULT_SPRITE_SCALE, LANCER_SPRITE_WIDTH, LANCER_SPRITE_WIDTH);
         newLancer.use(lancer(unitId, leader))
         newLancer.use(formation())
