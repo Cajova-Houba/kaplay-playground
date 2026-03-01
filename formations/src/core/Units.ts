@@ -35,9 +35,9 @@ export interface MovementComp extends Comp {
 export function movement(speed: number): MovementComp {
     return {
         id: "movement",
-        require: ["pos", "unit"],
+        require: ["pos"],
         speed: speed,
-        update(this: GameObj<MovementComp | StateComp | UnitComp>) {
+        update(this: GameObj<MovementComp | StateComp>) {
             if (this.targetPos) {
                 const targetPos = this.targetPos;
                 const targetReached = this.moveUnitTo(targetPos, this.speed);
@@ -47,7 +47,7 @@ export function movement(speed: number): MovementComp {
                 }
             }
         },
-        moveUnitTo(this: GameObj<PosComp | StateComp | SpriteComp | UnitComp>, position: Vec2, speed?: number) {
+        moveUnitTo(this: GameObj<PosComp | StateComp | SpriteComp>, position: Vec2, speed?: number) {
             if (this.state == "idle") {
                 this.enterState("move");
             }
@@ -75,17 +75,17 @@ export function movement(speed: number): MovementComp {
  * Face towards an enemy.
  */
 export interface FaceTowardsTargetComp extends Comp {
-    faceTowardsTo: GameObj<PosComp | UnitComp | StateComp> | null;
+    faceTowardsTo: GameObj<PosComp | StateComp> | null;
 }
 
-export function faceTowardsTarget(target?: GameObj<PosComp | UnitComp | StateComp>): FaceTowardsTargetComp {
+export function faceTowardsTarget(target?: GameObj<PosComp | StateComp>): FaceTowardsTargetComp {
     return {
         id: "faceTowardsTarget",
         faceTowardsTo: target ?? null,
-        update(this: GameObj<FaceTowardsTargetComp | SpriteComp | PosComp | UnitComp>) {
+        update(this: GameObj<FaceTowardsTargetComp | SpriteComp | PosComp>) {
             if (this.faceTowardsTo) {
-                const targetPos = this.faceTowardsTo.getCenter();
-                if (targetPos.x > this.getCenter().x) {
+                const targetPos = this.faceTowardsTo.pos;
+                if (targetPos.x > this.pos.x) {
                     this.flipX = false;
                 } else {
                     this.flipX = true;
@@ -93,41 +93,6 @@ export function faceTowardsTarget(target?: GameObj<PosComp | UnitComp | StateCom
             }
         }
     }
-}
-
-/**
- * Unit component. Requires the following comps: pos, sprite, state.
- */
-export interface UnitComp extends Comp {
-
-    /**
-     * Unscaled vector from the object's position (=its top left corner) to its center. 
-     */
-    adjustVector: Vec2;
-
-    /**
-     * Scaled adjuctVector.
-     */
-    scaledAdjustVector: Vec2;
-
-    /**
-     * Returns the center of this unit (using its position and scaledAdjustVector).
-     */
-    getCenter(): Vec2;
-}
-
-export function unit(adjustVector: Vec2, scaledAdjustVector: Vec2): UnitComp {
-    const newUnit = {
-        id: "unit",
-        require: ["state", "sprite", "area", "pos"],
-        adjustVector: adjustVector,
-        scaledAdjustVector: scaledAdjustVector,
-        getCenter(this: GameObj<PosComp | UnitComp>) {
-            return this.pos.add(this.scaledAdjustVector);
-        },
-    };
-
-    return newUnit;
 }
 
 export interface LancerComp extends Comp {
@@ -145,7 +110,7 @@ export interface LancerComp extends Comp {
     /**
      * Leader of this lancer, used especially for its position.
      */
-    leader: GameObj<PosComp | UnitComp>;
+    leader: GameObj<PosComp>;
 
     /**
      * Old leader position, used for delayed following.
@@ -153,15 +118,15 @@ export interface LancerComp extends Comp {
     oldLeaderPosition?: Vec2;
 }
 
-export function lancer(unitId: number, leader: GameObj<PosComp | UnitComp>): LancerComp {
+export function lancer(unitId: number, leader: GameObj<PosComp>): LancerComp {
     const newLancer: LancerComp = {
         id: "lancer",
-        require: ["unit"],
+        require: ["pos", "state"],
         unitId: unitId, 
         leader: leader,
-        update(this: GameObj<PosComp | MovementComp | StateComp | UnitComp | LancerComp>) {
+        update(this: GameObj<PosComp | MovementComp | StateComp | LancerComp>) {
             // keep track of your leader
-            const leaderPosition = this.leader.getCenter();
+            const leaderPosition = this.leader.pos;
 
             if (this.oldLeaderPosition == null || this.oldLeaderPosition.dist(leaderPosition) > 30) {
                 this.oldLeaderPosition = leaderPosition;
@@ -169,7 +134,7 @@ export function lancer(unitId: number, leader: GameObj<PosComp | UnitComp>): Lan
 
             // handle formation
             if (this.formation) {
-                const targetPos = this.formation.calculatePosition(this.oldLeaderPosition, unitId).sub(this.scaledAdjustVector);
+                const targetPos = this.formation.calculatePosition(this.oldLeaderPosition, unitId);
                 
                 if (targetPos.dist(this.pos) > 5)  {
                     const targetReached = this.moveUnitTo(targetPos);
@@ -191,27 +156,19 @@ export function spawnUnit(position: PosComp,
     spriteName: string, 
     flipX: boolean = false, 
     unitScale: number = DEFAULT_SPRITE_SCALE, 
-    spriteWidth: number = LEADER_SPRITE_WIDTH, 
-    spriteHeight: number = LEADER_SPRITE_WIDTH, 
     unitSpeed: number = UNIT_SPEED, 
     states = ["idle", "move"])
-    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp | FaceTowardsTargetComp>
+    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | FaceTowardsTargetComp>
     {
-    // we expect the pos to be the center point 
-    // but we need to adjust it to the top left corner
-    // in order for it to be compatible with the 
-    // Kaplay API
-    const adjustVector = vec2(spriteWidth/2.0, spriteHeight/2.0);
-    const adjustedPos = position.pos.sub(adjustVector);
 
-    const newUnit = add([pos(adjustedPos), 
+    const newUnit = add([position, 
         sprite(spriteName, 
             {anim: "idle", speed: unitSpeed, flipX: flipX},
         ),
         scale(unitScale), 
         area(),
         faceTowardsTarget(),
-        unit(adjustVector, adjustVector.scale(unitScale)),
+        anchor("center"),
         state("idle", states),
         movement(unitSpeed),
         UNIT_TAG
@@ -220,8 +177,7 @@ export function spawnUnit(position: PosComp,
     // add center point to each unit
     // for debug purposes
     if (UNIT_DEBUG_POINT) {
-        const center = pos(0,0).pos.add(newUnit.adjustVector);
-        newUnit.add([pos(center), circle(10), color(Color.RED)]);
+        newUnit.add([pos(0,0), circle(10), color(Color.RED)]);
     }
 
     newUnit.onStateEnter("idle", () => {
@@ -234,20 +190,20 @@ export function spawnUnit(position: PosComp,
 }
 
 export function spawnLeader(position: PosComp,  spriteName: string, flipX: boolean = false)
-    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp | FaceTowardsTargetComp> {
-    const l = spawnUnit(position, spriteName, flipX, LEADER_SCALE, LEADER_SPRITE_WIDTH, LEADER_SPRITE_WIDTH, LEADER_SPEED);
+    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | FaceTowardsTargetComp> {
+    const l = spawnUnit(position, spriteName, flipX, LEADER_SCALE, LEADER_SPEED);
 
     return l;
 }
 
-export function spawnLancer(position: PosComp, unitId: number, leader: GameObj<PosComp | StateComp | UnitComp>)
-    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | UnitComp | LancerComp | FaceTowardsTargetComp> {
-        const newLancer = spawnUnit(position, "blue_lancer", false, DEFAULT_SPRITE_SCALE, LANCER_SPRITE_WIDTH, LANCER_SPRITE_WIDTH);
+export function spawnLancer(position: PosComp, unitId: number, leader: GameObj<PosComp>)
+    : GameObj<PosComp | MovementComp | SpriteComp | StateComp | LancerComp | FaceTowardsTargetComp> {
+        const newLancer = spawnUnit(position, "blue_lancer", false, DEFAULT_SPRITE_SCALE);
         newLancer.use(lancer(unitId, leader))
         newLancer.use(formation())
         
         if (UNIT_DEBUG_POINT) {
-            newLancer.add([pos(newLancer.adjustVector), text(unitId), color(Color.GREEN)]);
+            newLancer.add([pos(0,0), text(unitId), color(Color.GREEN)]);
         }
 
         return newLancer;

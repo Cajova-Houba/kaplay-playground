@@ -97,7 +97,7 @@ export function createMainScene() {
             debug.log("Selecting unit "+unit);
 
             const outlineObj = k.add([
-                k.pos(p.x + LEADER_SPRITE_WIDTH/2.8, p.y + LEADER_SPRITE_WIDTH/2.8),
+                k.pos(p.x, p.y),
                 circle(LEADER_SPRITE_WIDTH/3.0, {fill: false}), 
                 outline(3, Color.YELLOW)
             ]);

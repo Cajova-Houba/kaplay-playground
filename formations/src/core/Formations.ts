@@ -1,6 +1,5 @@
 import type { GameObj, PosComp, Vec2 } from "kaplay";
 import "kaplay/global";
-import { UnitComp } from "./Units";
 
 export interface Formation {
     /**
@@ -129,16 +128,16 @@ export class LineFormation implements Formation {
  */
 export class DirectedLineFormation extends LineFormation {
 
-    readonly target: GameObj<PosComp | UnitComp>;
+    readonly target: GameObj<PosComp>;
 
-    constructor(groupSize: number, target: GameObj<PosComp | UnitComp>, unitSpace?: number) {
+    constructor(groupSize: number, target: GameObj<PosComp>, unitSpace?: number) {
         super(groupSize, unitSpace);
         this.target = target;
     }
 
     calculatePosition(leaderPosition: Vec2, unitId: number): Vec2 {
         // direction vector
-        const leaderToTarget = this.target.getCenter().sub(leaderPosition);
+        const leaderToTarget = this.target.pos.sub(leaderPosition);
 
         const formationNormal = leaderToTarget.normal().unit().scale(this.unitSpace);
 
@@ -156,11 +155,11 @@ export class MultilineFormation implements Formation {
     
     readonly unitSpace: number;
     readonly groupSize: number;
-    readonly target: GameObj<PosComp | UnitComp>;
+    readonly target: GameObj<PosComp>;
     readonly unitsPerLine: number;
     readonly middlePos: number;
 
-    constructor(groupSize: number, target: GameObj<PosComp | UnitComp>, unitSpace: number = 60, unitsPerLine: number = 3) {
+    constructor(groupSize: number, target: GameObj<PosComp>, unitSpace: number = 60, unitsPerLine: number = 3) {
         this.unitSpace = unitSpace;
         this.groupSize = groupSize;
         this.target = target;
@@ -182,7 +181,7 @@ export class MultilineFormation implements Formation {
         // P_i = position in line (0 for the leftmost unit, 1 for the second unit from the left, etc.)
 
         // direction vector
-        const leaderToTarget = this.target.getCenter().sub(leaderPosition);
+        const leaderToTarget = this.target.pos.sub(leaderPosition);
 
         const formationNormal = leaderToTarget.normal().unit().scale(this.unitSpace);
         const lineVector = leaderToTarget.unit().scale(this.unitSpace);
