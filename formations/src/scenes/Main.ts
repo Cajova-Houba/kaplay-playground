@@ -1,5 +1,5 @@
 import {k, PLAYABLE_WIDTH, PLAYABLE_HEIGHT, SIDE_PANEL_WIDTH} from "../App.ts";
-import { CircleFormation, DirectedLineFormation, MultilineFormation, SquareFormation } from "../core/Formations.ts";
+import { CircleFormation, DirectedLineFormation, MultilineFormation, SquareFormation, WedgeFormation } from "../core/Formations.ts";
 import { spawnLeader, spawnLancer, LEADER_TAG, ENEMY_TAG, LancerComp, FormationComp, UnitComp } from "../core/Units.ts";
 import type { GameObj, StateComp } from "kaplay";
 import { createBlueButton, createRedButton } from "../ui/Ui.ts";
@@ -81,6 +81,12 @@ export function createMainScene() {
     });
     createBlueButton(k.width() - SIDE_PANEL_WIDTH + 5, 310, 60, 20, "3 Line formation", () => {
         const formation = new MultilineFormation(GROUP_SIZE, enemy, 60, 3);
+        group.forEach(unit => {
+            unit.formation = formation;
+        });
+    });
+    createBlueButton(k.width() - SIDE_PANEL_WIDTH + 5, 380, 60, 20, "Wedge formation", () => {
+        const formation = new WedgeFormation(GROUP_SIZE, enemy);
         group.forEach(unit => {
             unit.formation = formation;
         });
