@@ -209,12 +209,14 @@ export class MultilineFormation implements Formation {
  * Wedge formation with the leader in the front.
  */
 export class WedgeFormation implements Formation {
-    readonly unitSpace: number;
+    readonly unitSpaceX: number;
+    readonly unitSpaceY: number;
     readonly groupSize: number
     readonly target: GameObj<PosComp>;
 
-    constructor(groupSize: number, target: GameObj<PosComp>, unitSpace: number = 60) {
-        this.unitSpace = unitSpace;
+    constructor(groupSize: number, target: GameObj<PosComp>, unitSpaceX: number = 15, unitSpaceY: number = 60) {
+        this.unitSpaceX = unitSpaceX;
+        this.unitSpaceY = unitSpaceY;
         this.groupSize = groupSize;
         this.target = target;
     }
@@ -222,8 +224,8 @@ export class WedgeFormation implements Formation {
     calculatePosition(leaderPosition: Vec2, unitId: number): Vec2 {
         const leaderToTarget = this.target.pos.sub(leaderPosition);
 
-        const formationNormal = leaderToTarget.normal().unit().scale(this.unitSpace);
-        const lineVector = leaderToTarget.unit().scale(this.unitSpace);
+        const formationNormal = leaderToTarget.normal().unit().scale(this.unitSpaceX);
+        const lineVector = leaderToTarget.unit().scale(this.unitSpaceY);
 
         const lineIndex = Math.floor(unitId / 2) + 1;
         const side = unitId % 2 === 0 ? -1 : 1;
